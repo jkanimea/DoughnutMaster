@@ -50,4 +50,4 @@ integrations = ["javascript_database:1.0.0"]
 [userenv]
 
 [userenv.shared]
-FACEBOOK_CALLBACK_URL = "https://donutmaster-pro.replit.app/api/auth/facebook/callback"
+FACEBOOK_CALLBACK_URL = "https://2dee7c9b-69f2-4e47-9ee0-e0a59bf30964-00-3dx1vbbq5kufz.kirk.replit.dev/api/auth/facebook/callback"
