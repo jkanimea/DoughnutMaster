@@ -5,14 +5,14 @@ import { Plus, Minus } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product, isAvailable: availabilityProp }: { product: Product; isAvailable?: boolean }) {
   const { addToCart, checkAvailability, selectedOrderDate } = useStore();
   const [quantity, setQuantity] = useState(1);
 
   const increment = () => setQuantity(q => q + 1);
   const decrement = () => setQuantity(q => Math.max(1, q - 1));
 
-  const isAvailable = checkAvailability(product.category);
+  const isAvailable = availabilityProp !== undefined ? availabilityProp : checkAvailability(product.category);
 
   return (
     <motion.div 
@@ -20,6 +20,7 @@ export function ProductCard({ product }: { product: Product }) {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       className={`group relative overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md ${!isAvailable ? 'opacity-60 grayscale' : ''}`}
+      data-testid={`card-product-${product.id}`}
     >
       <div className="aspect-[4/3] w-full overflow-hidden bg-muted relative">
         <img 
@@ -30,7 +31,7 @@ export function ProductCard({ product }: { product: Product }) {
         {!isAvailable && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm">
             <span className="bg-destructive text-destructive-foreground px-3 py-1 rounded-full font-bold text-sm transform -rotate-12">
-              SOLD OUT
+              Sold Out
             </span>
           </div>
         )}
@@ -40,7 +41,7 @@ export function ProductCard({ product }: { product: Product }) {
           <span className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-semibold text-secondary-foreground">
             {product.category}
           </span>
-          <span className="font-bold text-lg text-primary">${product.price.toFixed(2)}</span>
+          <span className="font-bold text-lg text-primary">${(product.price / 100).toFixed(2)}</span>
         </div>
         <h3 className="font-serif text-xl font-bold leading-tight mb-2">{product.name}</h3>
         <p className="text-sm text-muted-foreground mb-6 line-clamp-2">
