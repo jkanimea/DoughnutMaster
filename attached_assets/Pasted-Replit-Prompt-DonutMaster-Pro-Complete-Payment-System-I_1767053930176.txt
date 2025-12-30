@@ -1,0 +1,698 @@
+Replit Prompt: DonutMaster Pro - Complete Payment System Included
+PROJECT TITLE: DonutMaster Pro - Full Bakery Management System with Secure Payments
+PROJECT OVERVIEW:
+Build a comprehensive mobile-responsive donut/bakery sales platform with complete payment processing, inventory management, financial reporting, and automated testing. The system must handle both e-commerce payments (Visa/Mastercard via Stripe) and traditional bank transfers for New Zealand banks, with secure credit card storage for returning customers.
+
+CORE TECHNOLOGY STACK:
+Frontend: Next.js 14 (App Router) with TypeScript & Tailwind CSS
+
+Backend: Next.js API Routes with Server Actions
+
+Database: PostgreSQL with Prisma ORM
+
+Payment Processing: Stripe for cards, Bank Transfer for NZ banks
+
+Authentication: NextAuth.js with credentials + social logins (Phase 2)
+
+Mobile: Responsive design with touch-optimized components
+
+Security: PCI-compliant card handling, data encryption
+
+Testing: Jest (unit/integration), Cypress (E2E), 80%+ coverage requirement
+
+Deployment: Replit-ready with PostgreSQL integration
+
+ESSENTIAL BUSINESS FEATURES:
+1. USER MANAGEMENT SYSTEM:
+Three Registration Methods:
+
+Admin manual registration (full control)
+
+Self-registration via public dashboard
+
+Social login via Facebook/Gmail (Phase 2)
+
+User Types & Permissions:
+
+Customers: Place orders, view history, manage payment methods
+
+Administrators: Full system access, financial reports, inventory control
+
+2. PRODUCT & ORDERING SYSTEM:
+Base Product: Donuts sold in bags (10 donuts = $10 per bag)
+
+Multi-product Support: Admin can add buns, pastries with custom pricing
+
+Order Flow: Bag selection → Date selection (no Friday/Saturday) → Payment → Confirmation
+
+Delivery Options: Customer pickup or admin delivery
+
+Quantity Calculation: 1 bag = 10 items, price scales linearly
+
+3. PAYMENT SYSTEM (COMPREHENSIVE):
+A. STRIPE INTEGRATION (Credit/Debit Cards):
+
+Supported Cards: Visa, Mastercard, American Express
+
+Secure Card Storage: PCI-compliant tokenization via Stripe Customer API
+
+Card Management: Customers can save multiple cards, set default, delete
+
+Security Features:
+
+Never store full card numbers locally
+
+Show only last 4 digits and expiry in UI
+
+Stripe Elements for secure iframe card input
+
+3D Secure authentication for high-risk transactions
+
+CVV required for each transaction (not stored)
+
+B. BANK TRANSFER (New Zealand):
+
+Supported Banks: All major NZ banks (ANZ, ASB, BNZ, Westpac, etc.)
+
+Payment Details Generation: Unique reference number per order
+
+Manual Verification: Admin marks transfers as received
+
+Automated Reminders: Send bank details via email/SMS
+
+Receipt Upload: Customers can upload transfer receipts
+
+C. CREDIT/PAY LATER SYSTEM:
+
+Credit Requests: Customers can request delayed payment
+
+Admin Approval: Manual review of credit requests
+
+Custom Terms: 7, 14, 30-day payment windows
+
+Automated Reminders: Payment due alerts
+
+Overdue Tracking: Escalation process for late payments
+
+D. FREE DONATIONS:
+
+Admin can issue free products for promotions/loyalty
+
+Separate tracking from revenue calculations
+
+Reason tracking (promotion, complaint, loyalty)
+
+4. ORDER SCHEDULING & ALERTS:
+Date Restrictions: No deliveries on Friday or Saturday
+
+Admin-set Availability: Pre-configured delivery dates
+
+Customer Choice: Select next available non-Friday/Saturday date
+
+Automated Alerts:
+
+Order reminders (24 hours before)
+
+Payment due notifications
+
+Credit card expiry warnings
+
+Bank transfer reminders
+
+5. INVENTORY & EXPENSE MANAGEMENT:
+Ingredient Tracking: Flour, sugar, milk, oil, cream, butter with unit costs
+
+Batch Production: Track costs per production batch
+
+Misc Expenses: Electricity, labor, packaging, rent
+
+Auto-calculation: System calculates ingredients needed based on orders
+
+Low Stock Alerts: Automatic reorder notifications
+
+Recipe System: Define exact ingredient quantities per product
+
+6. FINANCIAL REPORTING & ANALYTICS:
+Admin Dashboard Must Include:
+
+Real-time Financial Overview:
+
+Revenue (paid orders)
+
+Expenses (ingredients + operational)
+
+Profit (calculated automatically)
+
+Profit margin percentage
+
+Visual Charts:
+
+Revenue vs Expenses vs Profit (pie chart)
+
+Sales trend by day/week/month (line chart)
+
+Payment method distribution (donut chart)
+
+Expense breakdown by category (bar chart)
+
+Detailed Reports:
+
+Daily/weekly/monthly financial summaries
+
+Product profitability analysis
+
+Customer purchase patterns
+
+Payment success/failure rates
+
+Bank transfer pending/cleared status
+
+7. SECURITY & COMPLIANCE FEATURES:
+PCI DSS Compliance: Via Stripe integration
+
+Data Encryption: All sensitive data encrypted at rest
+
+Access Controls: Role-based permissions
+
+Audit Logging: Track all payment-related actions
+
+GDPR/Privacy: Data minimization, right to deletion
+
+Secure Session Management: JWT with refresh tokens
+
+TECHNICAL IMPLEMENTATION REQUIREMENTS:
+DATABASE SCHEMA (Prisma):
+Essential Models:
+
+User - With payment preferences, saved cards (token only)
+
+Product - With pricing, inventory links
+
+Order - With payment method, status, dates
+
+Payment - Transaction records, status, method details
+
+StripeCustomer - Stripe IDs, saved payment methods
+
+BankTransfer - NZ bank details, references, status
+
+Ingredient, Batch, InventoryLevel - For cost tracking
+
+FinancialReport - Auto-generated profit/loss data
+
+Notification - Alert system
+
+AuditLog - Security tracking
+
+PAYMENT FLOW ARCHITECTURE:
+Card Payment Path:
+Customer → Stripe Elements → Stripe API → Webhook → Order Confirmation
+
+Bank Transfer Path:
+Customer → Bank Details Display → Manual Transfer → Admin Verification → Order Confirmation
+
+Credit Path:
+Customer → Credit Request → Admin Approval → Payment Schedule → Reminders
+
+API ENDPOINT STRUCTURE:
+/api/payments/stripe/* - Card payment processing
+
+/api/payments/bank-transfer/* - NZ bank handling
+
+/api/payments/methods/* - Saved payment method management
+
+/api/orders/* - Order creation with payment integration
+
+/api/inventory/* - Stock and cost management
+
+/api/reports/* - Financial analytics
+
+/api/webhooks/stripe - Stripe event handling
+
+COMPREHENSIVE TESTING SUITE (MANDATORY):
+TESTING REQUIREMENTS:
+80% Minimum Code Coverage
+
+Unit Tests: All business logic, calculations, utilities
+
+Integration Tests: Full payment flows, user journeys
+
+E2E Tests: Real user scenarios with Cypress
+
+Security Tests: Payment data handling, authentication
+
+Performance Tests: Payment processing speed
+
+TEST CATEGORIES:
+A. Payment System Tests:
+
+Stripe Integration Tests:
+
+Card tokenization and storage
+
+Successful/failed charge scenarios
+
+Saved card retrieval and use
+
+3D Secure authentication flow
+
+Webhook event handling
+
+Bank Transfer Tests:
+
+Unique reference number generation
+
+Bank detail display accuracy
+
+Admin verification workflow
+
+Receipt upload processing
+
+NZ bank format validation
+
+Credit System Tests:
+
+Credit request submission
+
+Admin approval/rejection flow
+
+Payment schedule generation
+
+Overdue payment handling
+
+Reminder system accuracy
+
+B. Financial Calculation Tests:
+
+Profit calculation accuracy
+
+Expense allocation correctness
+
+Tax calculations (if applicable)
+
+Multi-currency handling (NZD only)
+
+Discount and promotion application
+
+C. Security Tests:
+
+PCI compliance verification
+
+Card data never in logs
+
+Encryption validation
+
+Authentication bypass attempts
+
+Role permission enforcement
+
+D. User Flow Tests:
+
+Complete order-to-payment journey
+
+Saved card reuse flow
+
+Bank transfer instruction follow-up
+
+Credit request and approval
+
+Free donation issuance
+
+AUTOMATED TESTING PIPELINE:
+Pre-commit Hooks: Run unit tests before commit
+
+CI/CD Pipeline: Full test suite on every push
+
+Database: Isolated test database with seeded data
+
+Mock Services: Stripe, email, SMS mocked for testing
+
+Coverage Reports: Automated reporting and alerts
+
+REPLIT-SPECIFIC CONFIGURATION:
+REQUIRED FILES:
+1. .replit Configuration:
+
+replit
+run = "npm run dev"
+language = "nodejs"
+hidden = [".env", ".env.local", ".env.test"]
+2. replit.nix for PostgreSQL:
+
+nix
+{ pkgs }: {
+  deps = [
+    pkgs.nodejs-18_x
+    pkgs.postgresql_14
+    pkgs.yarn
+    pkgs.openssl
+    pkgs.git
+  ];
+}
+3. Environment Variables Template (.env.example):
+
+text
+# Database
+DATABASE_URL="postgresql://user:pass@localhost:5432/donutmaster"
+
+# Stripe (Required for card payments)
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_PUBLISHABLE_KEY="pk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+STRIPE_CURRENCY="NZD"
+
+# NextAuth
+NEXTAUTH_SECRET="generated-secret-here"
+NEXTAUTH_URL="http://localhost:3000"
+
+# Application
+APP_URL="http://localhost:3000"
+ENCRYPTION_KEY="32-char-encryption-key"
+
+# Email (for receipts)
+SMTP_HOST="smtp.gmail.com"
+SMTP_PORT="587"
+SMTP_USER="your-email@gmail.com"
+SMTP_PASS="your-password"
+4. package.json Scripts (Must Include):
+
+json
+{
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "jest --coverage",
+    "test:unit": "jest tests/unit/",
+    "test:integration": "jest tests/integration/",
+    "test:e2e": "cypress run",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test:payment": "jest tests/unit/payment/ tests/integration/payment-flow/",
+    "test:security": "jest tests/security/",
+    "lint": "next lint",
+    "type-check": "tsc --noEmit",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:reset": "prisma migrate reset --force",
+    "stripe:listen": "stripe listen --forward-to localhost:3000/api/webhooks/stripe",
+    "prepare": "husky install"
+  }
+}
+DEPENDENCIES (Must Install):
+bash
+# Core
+next react react-dom typescript @types/node @types/react
+tailwindcss postcss autoprefixer
+
+# Database & ORM
+@prisma/client prisma
+
+# Authentication
+next-auth @next-auth/prisma-adapter bcrypt jsonwebtoken
+
+# Payments
+stripe @stripe/stripe-js @stripe/react-stripe-js
+
+# Forms & Validation
+react-hook-form zod @hookform/resolvers
+
+# UI Components
+date-fns chart.js react-chartjs-2 lucide-react
+
+# Testing (Dev Dependencies)
+jest @testing-library/react @testing-library/jest-dom @testing-library/user-event
+ts-jest jest-environment-jsdom @types/jest
+supertest @types/supertest
+cypress @cypress/react @cypress/webpack-dev-server
+msw @faker-js/faker
+husky lint-staged
+PROJECT STRUCTURE TEMPLATE:
+text
+donutmaster-pro/
+├── app/
+│   ├── (auth)/                  # Login, register, social auth
+│   ├── (customer)/             # Customer dashboard, orders, payments
+│   ├── (admin)/                # Admin dashboard, reports, inventory
+│   ├── api/
+│   │   ├── auth/               # NextAuth routes
+│   │   ├── payments/           # Stripe & bank transfer endpoints
+│   │   ├── orders/             # Order management
+│   │   ├── inventory/          # Stock management
+│   │   ├── reports/            # Financial data
+│   │   └── webhooks/           # Stripe webhook handler
+│   └── layout.tsx              # Root layout with providers
+├── components/
+│   ├── payments/               # Stripe Elements, bank transfer forms
+│   ├── dashboard/              # Admin & customer dashboard widgets
+│   ├── inventory/              # Stock management components
+│   ├── reports/                # Chart and report components
+│   └── shared/                 # Reusable UI components
+├── lib/
+│   ├── stripe/                 # Stripe configuration & utilities
+│   ├── payments/               # Payment processing logic
+│   ├── security/               # Encryption, validation
+│   ├── inventory/              # Cost calculations
+│   └── database/               # Prisma client, types
+├── prisma/
+│   ├── schema.prisma           # Complete schema with payments
+│   └── seed.ts                 # Test data with payment methods
+├── tests/
+│   ├── unit/
+│   │   ├── payments/           # Stripe, bank transfer tests
+│   │   ├── inventory/          # Cost calculation tests
+│   │   └── security/           # PCI compliance tests
+│   ├── integration/
+│   │   ├── payment-flow/       # Complete payment journeys
+│   │   └── admin-flow/         # Admin workflows
+│   └── e2e/
+│       ├── payment.cy.ts       # E2E payment tests
+│       └── security.cy.ts      # Security validation tests
+├── cypress/                    # Cypress configuration
+├── .github/workflows/          # CI/CD pipelines
+└── public/                     # Static assets
+SETUP INSTRUCTIONS FOR REPLIT:
+Step 1: Initial Project Creation
+bash
+# Create new Replit with Node.js template
+# Name: DonutMaster-Pro
+
+# Install Node.js 18+ and PostgreSQL via replit.nix
+# Wait for packages to install
+Step 2: Clone/Create Project Structure
+bash
+# Install all dependencies from package.json
+npm install [all listed dependencies]
+
+# Initialize Prisma
+npx prisma init
+
+# Set up environment variables from .env.example
+# IMPORTANT: Get Stripe test keys from stripe.com
+Step 3: Database Setup
+bash
+# Generate Prisma client
+npx prisma generate
+
+# Create and migrate database
+npx prisma db push
+
+# Seed with test data including payment methods
+npm run db:seed
+Step 4: Stripe Configuration
+bash
+# Install Stripe CLI for webhook testing
+curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public.key | gpg --dearmor | sudo tee /usr/share/keyrings/stripe.gpg
+echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | sudo tee -a /etc/apt/sources.list.d/stripe.list
+sudo apt update && sudo apt install stripe
+
+# Login to Stripe (requires browser)
+stripe login
+
+# Set up webhook forwarding
+npm run stripe:listen
+Step 5: Test Verification
+bash
+# Run complete test suite
+npm run test:all
+
+# Verify payment tests pass
+npm run test:payment
+
+# Check security tests
+npm run test:security
+
+# Build verification
+npm run build
+
+# Type checking
+npm run type-check
+Step 6: Start Development
+bash
+# If all tests pass, start development server
+npm run dev
+
+# Application available at Replit's provided URL
+ACCEPTANCE CRITERIA (MUST PASS):
+Payment System:
+✅ Stripe card payments work with test cards
+
+✅ Bank transfer details generate correctly
+
+✅ Credit card storage works (last 4 digits only visible)
+
+✅ Saved cards can be reused for new orders
+
+✅ 3D Secure triggers for suspicious transactions
+
+✅ NZ bank format validation passes
+
+✅ Payment webhooks process successfully
+
+✅ Receipt emails send for both payment types
+
+Financial Calculations:
+✅ Profit = Revenue - Expenses (always accurate)
+
+✅ Expense breakdown shows correct categories
+
+✅ Inventory costs calculate correctly per batch
+
+✅ Free donations don't affect revenue totals
+
+✅ Credit payments track correctly in reports
+
+Security & Compliance:
+✅ No full card numbers in logs or database
+
+✅ All sensitive data encrypted
+
+✅ PCI compliance maintained via Stripe
+
+✅ Authentication required for all payment actions
+
+✅ Audit logs track payment modifications
+
+Testing Requirements:
+✅ 80%+ code coverage achieved
+
+✅ All unit tests pass
+
+✅ All integration tests pass
+
+✅ All E2E tests pass
+
+✅ Payment flow tests cover all scenarios
+
+✅ Security tests validate PCI compliance
+
+User Experience:
+✅ Mobile-responsive design works on all screens
+
+✅ Payment forms are intuitive and clear
+
+✅ Saved payment methods display securely
+
+✅ Bank transfer instructions are NZ-specific
+
+✅ Payment status updates in real-time
+
+✅ Error messages guide users to resolution
+
+DELIVERABLES CHECKLIST:
+Required for Project Completion:
+✅ Full Next.js application running on Replit
+
+✅ PostgreSQL database with complete schema
+
+✅ Stripe integration with test mode working
+
+✅ NZ bank transfer system functional
+
+✅ Secure credit card storage and reuse
+
+✅ Admin dashboard with financial reports
+
+✅ Customer dashboard with order history
+
+✅ Inventory and expense tracking
+
+✅ Automated alert system
+
+✅ Comprehensive test suite (80%+ coverage)
+
+✅ Mobile-responsive design
+
+✅ Security features implemented
+
+✅ Documentation for setup and testing
+
+Payment-Specific Deliverables:
+✅ Stripe Elements card form
+
+✅ Saved payment methods interface
+
+✅ Bank transfer instruction generator
+
+✅ Payment status tracking
+
+✅ Receipt generation and emailing
+
+✅ Admin payment verification interface
+
+✅ Credit card expiry warnings
+
+✅ Failed payment recovery flows
+
+✅ Refund processing capability
+
+✅ Payment analytics reporting
+
+TROUBLESHOOTING & SUPPORT:
+Common Issues & Solutions:
+Stripe Webhook Failures: Check secret, verify URL in Stripe dashboard
+
+Database Connection: Ensure PostgreSQL running in Replit
+
+Payment Tests Failing: Verify Stripe test keys are valid
+
+Build Errors: Check TypeScript types and dependencies
+
+Coverage Low: Add missing tests for edge cases
+
+Testing Support Commands:
+bash
+# Run specific test categories
+npm run test:unit -- --testPathPattern=payment
+npm run test:integration -- --testNamePattern="bank transfer"
+
+# Debug Cypress tests
+npm run test:e2e -- --headed --browser chrome
+
+# Check database state
+npx prisma studio
+FINAL INSTRUCTIONS FOR REPLIT:
+Copy this entire prompt into a new Replit project and follow these exact steps:
+
+Create new Node.js Replit named "DonutMaster-Pro"
+
+Replace all files with structure from this prompt
+
+Install all dependencies listed
+
+Set up environment variables (get Stripe test keys from stripe.com)
+
+Initialize database with Prisma
+
+Run complete test suite - ALL TESTS MUST PASS
+
+Verify payment system works with test cards
+
+Check mobile responsiveness on different screen sizes
+
+Confirm security features are implemented
+
+Document any issues encountered during setup
+
+Success is defined as: Application runs on Replit, all features work, all tests pass (80%+ coverage), payment system processes transactions securely, and financial calculations are accurate.
+
+Note: Do not proceed to feature development until the test suite passes completely. The testing requirement is non-negotiable and must be maintained throughout development.
