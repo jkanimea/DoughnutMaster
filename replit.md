@@ -62,14 +62,18 @@ Each entity has its own module folder with:
 - **Tables**: User, Product, Order, ProductAvailability, PaymentMethod
 
 ### Key Data Models
-- **Users**: Email/password auth with customer and admin roles
+- **Users**: Email/password auth with optional phone, social login support (Google/Facebook via provider/providerId fields), customer and admin roles
 - **Products**: Donuts, pastries, buns with pricing in cents, category-based organization
 - **Orders**: Links users to products with delivery dates, status tracking, and payment info
 - **ProductAvailability**: Date-based availability toggling per product category
 
 ### Authentication
 - Session-based authentication using bcrypt for password hashing
-- Role-based access control (customer vs admin)
+- Role-based access control (customer vs admin) - new users default to customer role
+- Social login support with provider/providerId fields (Google, Facebook ready)
+- Default admin account: admin@donutmaster.co.nz / admin123 (created via seed script)
+- Registration page at `/register` with name, email, phone, and social login buttons
+- Login page at `/login` with email/password and social login buttons
 - Database-backed auth with Prisma
 
 ### Testing Infrastructure
@@ -80,13 +84,15 @@ Each entity has its own module folder with:
 - **Test Files**: 
   - `server/__tests__/storage.test.ts`: 17 repository layer tests
   - `server/__tests__/routes.test.ts`: 15 API integration tests
+  - `server/__tests__/registration.test.ts`: 14 registration and social login tests
   - `client/src/__tests__/components/ProductCard.test.tsx`: 4 component tests
-  - `e2e/donutmaster.spec.ts`: 9 end-to-end test scenarios
+  - `e2e/donutmaster.spec.ts`: 17 end-to-end test scenarios (including registration/login flows)
 - **Test Commands**:
   - `npx vitest run`: Run all unit/integration tests
   - `npx vitest run --coverage`: Run with coverage report
   - `npx playwright test`: Run E2E tests
-- **Current Status**: 32 passing unit/integration tests, E2E framework configured
+  - `npx tsx prisma/seed.ts`: Seed admin user
+- **Current Status**: 46 passing unit/integration tests, E2E framework configured
 
 ## Adding New Entities (6-Step Workflow)
 
