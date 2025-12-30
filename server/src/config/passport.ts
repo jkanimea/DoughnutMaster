@@ -27,7 +27,7 @@ export function configurePassport() {
         clientID: facebookAppId,
         clientSecret: facebookAppSecret,
         callbackURL,
-        profileFields: ['id', 'emails', 'name', 'displayName'],
+        profileFields: ['id', 'name', 'displayName'],
       },
       async (accessToken, refreshToken, profile, done) => {
         try {

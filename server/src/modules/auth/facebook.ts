@@ -9,7 +9,7 @@ router.get('/facebook', (req: Request, res: Response, next: NextFunction) => {
   }
   
   passport.authenticate('facebook', {
-    scope: ['email', 'public_profile'],
+    scope: ['public_profile'],
   })(req, res, next);
 });
 
