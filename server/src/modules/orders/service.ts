@@ -8,7 +8,7 @@ interface CreateOrderWithUser extends CreateOrderDto {
 
 export class OrderService extends BaseService<Order, CreateOrderWithUser, UpdateOrderDto> {
   constructor(private readonly orderRepo: OrderRepository = orderRepository) {
-    super(orderRepo);
+    super(orderRepo, 'Order');
   }
 
   async findByUserId(userId: string): Promise<Order[]> {

@@ -4,7 +4,7 @@ import type { CreateAvailabilityDto, UpdateAvailabilityDto } from './dto';
 
 export class AvailabilityService extends BaseService<ProductAvailability, CreateAvailabilityDto, UpdateAvailabilityDto> {
   constructor(private readonly availRepo: AvailabilityRepository = availabilityRepository) {
-    super(availRepo);
+    super(availRepo, 'ProductAvailability');
   }
 
   async findByDate(date: string): Promise<ProductAvailability[]> {

@@ -5,7 +5,10 @@ import { NotFoundError } from '../exceptions';
 export abstract class BaseService<T, CreateDto, UpdateDto = Partial<CreateDto>>
   implements IBaseService<T, CreateDto, UpdateDto>
 {
-  constructor(protected readonly repository: IBaseRepository<T, CreateDto, UpdateDto>) {}
+  constructor(
+    protected readonly repository: IBaseRepository<T, CreateDto, UpdateDto>,
+    protected readonly resourceName: string = 'Resource'
+  ) {}
 
   protected async beforeCreate(data: CreateDto): Promise<CreateDto> {
     return data;
@@ -44,7 +47,7 @@ export abstract class BaseService<T, CreateDto, UpdateDto = Partial<CreateDto>>
   async update(id: string, data: UpdateDto): Promise<T | null> {
     const existing = await this.repository.findById(id);
     if (!existing) {
-      throw new NotFoundError('Resource', id);
+      throw new NotFoundError(this.resourceName, id);
     }
 
     const processedData = await this.beforeUpdate(id, data);
@@ -58,7 +61,7 @@ export abstract class BaseService<T, CreateDto, UpdateDto = Partial<CreateDto>>
   async delete(id: string): Promise<void> {
     const existing = await this.repository.findById(id);
     if (!existing) {
-      throw new NotFoundError('Resource', id);
+      throw new NotFoundError(this.resourceName, id);
     }
 
     await this.beforeDelete(id);

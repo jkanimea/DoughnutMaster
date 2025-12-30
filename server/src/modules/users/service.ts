@@ -6,7 +6,7 @@ import type { CreateUserDto, UpdateUserDto, LoginDto } from './dto';
 
 export class UserService extends BaseService<User, CreateUserDto, UpdateUserDto> {
   constructor(private readonly userRepo: UserRepository = userRepository) {
-    super(userRepo);
+    super(userRepo, 'User');
   }
 
   protected async beforeCreate(data: CreateUserDto): Promise<CreateUserDto> {

@@ -4,7 +4,7 @@
 
 DonutMaster Pro is a full-stack bakery management and e-commerce platform for selling donuts, pastries, and buns. The system supports customer ordering with date-based product availability, shopping cart functionality, checkout with payment processing, customer dashboards, and an admin panel for inventory and availability management.
 
-The application follows a monorepo structure with a React frontend, Express backend, and PostgreSQL database using Drizzle ORM.
+The application follows a monorepo structure with a React frontend, Express backend, and PostgreSQL database using Prisma ORM with a clean layered architecture.
 
 ## User Preferences
 
@@ -21,17 +21,45 @@ Preferred communication style: Simple, everyday language.
 - **Styling**: Tailwind CSS v4 with custom theme variables for a warm bakery aesthetic
 - **Animations**: Framer Motion for page transitions and micro-interactions
 
-### Backend Architecture
+### Backend Architecture (Layered / Clean Architecture)
 - **Framework**: Express.js with TypeScript
 - **API Design**: RESTful endpoints under `/api` prefix
-- **Development Server**: Vite dev server proxied through Express for HMR support
-- **Production Build**: esbuild bundles server code, Vite builds client assets to `dist/public`
+- **Architecture Pattern**: Inheritance-based layered architecture with generic base classes
+
+#### Core Layer (`server/src/core/`)
+- **Interfaces**: `IBaseRepository`, `IBaseService`, `IBaseController` with TypeScript generics
+- **Base Classes**:
+  - `BaseRepository`: Generic Prisma CRUD operations
+  - `BaseService`: Business logic with lifecycle hooks (beforeCreate, afterCreate, beforeUpdate, etc.)
+  - `BaseController`: HTTP handling with centralized error management
+- **Exceptions**: Centralized error classes (AppError, NotFoundError, ValidationError, UnauthorizedError, ForbiddenError, ConflictError)
+
+#### Module Layer (`server/src/modules/`)
+Each entity has its own module folder with:
+- `repository.ts`: Extends BaseRepository, adds entity-specific queries
+- `service.ts`: Extends BaseService, adds business logic
+- `controller.ts`: Extends BaseController, adds custom endpoints
+- `dto/index.ts`: Zod schemas and TypeScript types
+
+**Modules:**
+- `users/`: Authentication, user management
+- `products/`: Product catalog, categories
+- `orders/`: Order creation, status management
+- `availability/`: Date-based product availability
+- `payment-methods/`: Saved payment methods
+
+#### Benefits of This Pattern
+- 90% less boilerplate code for new entities
+- CRUD operations inherited from base classes
+- Only unique business methods added in child classes
+- Consistent error handling across all endpoints
+- New entity can be added in ~30 minutes following the 6-step workflow
 
 ### Database Layer
 - **Database**: PostgreSQL (required via `DATABASE_URL` environment variable)
-- **ORM**: Drizzle ORM with drizzle-kit for migrations
-- **Schema Location**: `shared/schema.ts` contains all table definitions
-- **Tables**: Users, Products, Orders, ProductAvailability, PaymentMethods
+- **ORM**: Prisma 7 with PostgreSQL adapter pattern
+- **Schema Location**: `prisma/schema.prisma` contains all model definitions
+- **Tables**: User, Product, Order, ProductAvailability, PaymentMethod
 
 ### Key Data Models
 - **Users**: Email/password auth with customer and admin roles
@@ -42,7 +70,7 @@ Preferred communication style: Simple, everyday language.
 ### Authentication
 - Session-based authentication using bcrypt for password hashing
 - Role-based access control (customer vs admin)
-- Currently uses mock users for development; database-backed auth routes are implemented
+- Database-backed auth with Prisma
 
 ### Testing Infrastructure
 - **Unit/Integration Tests**: Vitest with React Testing Library
@@ -50,7 +78,7 @@ Preferred communication style: Simple, everyday language.
 - **Coverage**: V8 coverage provider with 80%+ target
 - **Test Setup**: Custom setup file at `tests/setup.ts` with image mocking
 - **Test Files**: 
-  - `server/__tests__/storage.test.ts`: 17 storage layer tests
+  - `server/__tests__/storage.test.ts`: 17 repository layer tests
   - `server/__tests__/routes.test.ts`: 15 API integration tests
   - `client/src/__tests__/components/ProductCard.test.tsx`: 4 component tests
   - `e2e/donutmaster.spec.ts`: 9 end-to-end test scenarios
@@ -58,14 +86,23 @@ Preferred communication style: Simple, everyday language.
   - `npx vitest run`: Run all unit/integration tests
   - `npx vitest run --coverage`: Run with coverage report
   - `npx playwright test`: Run E2E tests
-- **Current Status**: 36 passing unit/integration tests, E2E framework configured
+- **Current Status**: 32 passing unit/integration tests, E2E framework configured
+
+## Adding New Entities (6-Step Workflow)
+
+1. **Define Entity**: Add model to `prisma/schema.prisma`
+2. **Create DTOs**: Add Zod schemas in `modules/<entity>/dto/index.ts`
+3. **Create Repository**: Extend BaseRepository, add custom queries (~5 lines)
+4. **Create Service**: Extend BaseService, add business methods (~10 lines)
+5. **Create Controller**: Extend BaseController, add custom endpoints (~10 lines)
+6. **Create Routes**: Add routes to `server/routes.ts`
 
 ## External Dependencies
 
 ### Database
 - **PostgreSQL**: Required database, connection via `DATABASE_URL` environment variable
-- **Drizzle ORM**: Schema definitions and query builder
-- **drizzle-kit**: Database migrations with `db:push` command
+- **Prisma ORM**: Schema definitions and client generation
+- **Prisma Adapter**: PostgreSQL adapter pattern for connection pooling
 
 ### Payment Processing
 - **Stripe**: Listed in build allowlist for payment processing (implementation pending)

@@ -8,7 +8,7 @@ interface CreatePaymentMethodWithUser extends CreatePaymentMethodDto {
 
 export class PaymentMethodService extends BaseService<PaymentMethod, CreatePaymentMethodWithUser, UpdatePaymentMethodDto> {
   constructor(private readonly pmRepo: PaymentMethodRepository = paymentMethodRepository) {
-    super(pmRepo);
+    super(pmRepo, 'PaymentMethod');
   }
 
   async findByUserId(userId: string): Promise<PaymentMethod[]> {

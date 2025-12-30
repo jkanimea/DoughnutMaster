@@ -4,7 +4,7 @@ import type { CreateProductDto, UpdateProductDto } from './dto';
 
 export class ProductService extends BaseService<Product, CreateProductDto, UpdateProductDto> {
   constructor(private readonly productRepo: ProductRepository = productRepository) {
-    super(productRepo);
+    super(productRepo, 'Product');
   }
 
   async findAllActive(): Promise<Product[]> {
