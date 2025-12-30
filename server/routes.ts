@@ -6,6 +6,7 @@ import { orderController } from './src/modules/orders';
 import { availabilityController } from './src/modules/availability';
 import { paymentMethodController } from './src/modules/payment-methods';
 import { passwordResetController } from './src/modules/password-reset';
+import facebookAuthRoutes from './src/modules/auth/facebook';
 
 export async function registerRoutes(
   httpServer: Server,
@@ -21,6 +22,9 @@ export async function registerRoutes(
   app.post('/api/auth/forgot-password', (req, res) => passwordResetController.forgotPassword(req, res));
   app.get('/api/auth/reset-password/:token', (req, res) => passwordResetController.validateToken(req, res));
   app.post('/api/auth/reset-password', (req, res) => passwordResetController.resetPassword(req, res));
+
+  // Facebook OAuth routes
+  app.use('/api/auth', facebookAuthRoutes);
 
   // User CRUD routes (admin only would typically have these)
   app.get('/api/users', (req, res) => userController.findAll(req, res));

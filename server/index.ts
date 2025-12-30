@@ -1,10 +1,27 @@
 import express, { type Request, Response, NextFunction } from "express";
+import session from "express-session";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
+import passport, { configurePassport } from "./src/config/passport";
 
 const app = express();
 const httpServer = createServer(app);
+
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'donutmaster-secret-key-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000,
+  }
+}));
+
+configurePassport();
+app.use(passport.initialize());
+app.use(passport.session());
 
 declare module "http" {
   interface IncomingMessage {
