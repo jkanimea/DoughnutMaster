@@ -3,11 +3,17 @@ import { ProductCard } from "@/components/ui/ProductCard";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, CalendarIcon } from "lucide-react";
 import heroImage from "@assets/generated_images/hero_image_of_delicious_glazed_donuts.png";
 import { motion } from "framer-motion";
+import { useStore } from "@/lib/store";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
 
 export default function Home() {
+  const { selectedOrderDate, setSelectedOrderDate } = useStore();
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -29,6 +35,28 @@ export default function Home() {
               <p className="max-w-[600px] text-muted-foreground md:text-xl">
                 Premium handcrafted donuts, cinnamon buns, and pastries delivered straight to your door or ready for pickup.
               </p>
+              
+              <div className="rounded-lg border bg-card p-4 shadow-sm max-w-md">
+                 <p className="text-sm font-medium mb-2">Check availability for your date:</p>
+                 <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className={`w-full justify-start text-left font-normal ${!selectedOrderDate && "text-muted-foreground"}`}>
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {selectedOrderDate ? format(selectedOrderDate, "PPP") : <span>Select Order Date</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={selectedOrderDate}
+                      onSelect={setSelectedOrderDate}
+                      initialFocus
+                      disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
               <div className="flex flex-col gap-2 min-[400px]:flex-row">
                 <Button size="lg" className="h-12 px-8 text-base" onClick={() => document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' })}>
                   Order Now <ArrowRight className="ml-2 h-4 w-4" />
@@ -82,6 +110,11 @@ export default function Home() {
           <div className="mb-12 text-center">
             <h2 className="text-3xl font-bold tracking-tight sm:text-4xl font-serif">Our Signature Treats</h2>
             <p className="mt-4 text-muted-foreground md:text-lg">Hand-rolled, fresh-fried, and glazed to perfection.</p>
+            {selectedOrderDate && (
+                <div className="mt-4 inline-block rounded-full bg-primary/10 px-4 py-1 text-sm font-medium text-primary">
+                    Showing availability for: {format(selectedOrderDate, "PPP")}
+                </div>
+            )}
           </div>
           
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">

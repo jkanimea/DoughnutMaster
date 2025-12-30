@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Product, MOCK_USER } from './mock-data';
 import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
 type CartItem = Product & { quantity: number };
 
@@ -15,17 +16,34 @@ type StoreContextType = {
   logout: () => void;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
+  // Availability Management
+  selectedOrderDate: Date | undefined;
+  setSelectedOrderDate: (date: Date | undefined) => void;
+  availability: Record<string, string[]>; // Date string -> Array of unavailable product category IDs
+  updateAvailability: (date: Date, category: string, isAvailable: boolean) => void;
+  checkAvailability: (category: string) => boolean;
 };
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [user, setUser] = useState<typeof MOCK_USER | null>(null); // Start logged out for demo
+  const [user, setUser] = useState<typeof MOCK_USER | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  
+  // New State for Availability
+  const [selectedOrderDate, setSelectedOrderDate] = useState<Date | undefined>(undefined);
+  const [availability, setAvailability] = useState<Record<string, string[]>>({}); // Stores UNAVAILABLE categories per date
+  
   const { toast } = useToast();
 
   const addToCart = (product: Product, quantity: number) => {
+    // Basic check - though UI should disable it
+    if (!checkAvailability(product.category)) {
+      toast({ title: "Item Unavailable", description: "This item is not available for the selected date.", variant: "destructive" });
+      return;
+    }
+
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
@@ -62,11 +80,36 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     toast({ title: "Logged out" });
   };
 
+  // Availability Logic
+  const updateAvailability = (date: Date, category: string, isAvailable: boolean) => {
+    const dateKey = format(date, 'yyyy-MM-dd');
+    setAvailability(prev => {
+      const currentUnavailable = prev[dateKey] || [];
+      if (isAvailable) {
+        // Remove from unavailable list
+        return { ...prev, [dateKey]: currentUnavailable.filter(c => c !== category) };
+      } else {
+        // Add to unavailable list
+        if (currentUnavailable.includes(category)) return prev;
+        return { ...prev, [dateKey]: [...currentUnavailable, category] };
+      }
+    });
+  };
+
+  const checkAvailability = (category: string) => {
+    if (!selectedOrderDate) return true; // Assume available if no date picked (or enforce date picking first)
+    const dateKey = format(selectedOrderDate, 'yyyy-MM-dd');
+    const unavailableCategories = availability[dateKey] || [];
+    return !unavailableCategories.includes(category);
+  };
+
   return (
     <StoreContext.Provider value={{
       cart, addToCart, removeFromCart, clearCart, cartTotal,
       user, login, logout,
-      isCartOpen, setIsCartOpen
+      isCartOpen, setIsCartOpen,
+      selectedOrderDate, setSelectedOrderDate,
+      availability, updateAvailability, checkAvailability
     }}>
       {children}
     </StoreContext.Provider>
