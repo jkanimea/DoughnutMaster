@@ -15,24 +15,39 @@ router.get('/facebook', (req: Request, res: Response, next: NextFunction) => {
 
 router.get('/facebook/callback',
   (req: Request, res: Response, next: NextFunction) => {
-    passport.authenticate('facebook', {
-      failureRedirect: '/login?error=facebook_auth_failed',
-    })(req, res, next);
-  },
-  (req: Request, res: Response) => {
-    const user = req.user as any;
-    if (user) {
-      (req.session as any).userId = user.id;
-      (req.session as any).userRole = user.role;
+    console.log('Facebook callback received:', req.query);
+    
+    passport.authenticate('facebook', (err: any, user: any, info: any) => {
+      console.log('Passport authenticate result:', { err: err?.message, user: !!user, info });
       
-      if (user.role === 'admin') {
-        res.redirect('/admin');
-      } else {
-        res.redirect('/dashboard');
+      if (err) {
+        console.error('Facebook auth error:', err);
+        return res.redirect('/login?error=facebook_auth_error');
       }
-    } else {
-      res.redirect('/login?error=facebook_auth_failed');
-    }
+      
+      if (!user) {
+        console.log('No user returned from Facebook');
+        return res.redirect('/login?error=facebook_auth_failed');
+      }
+      
+      req.logIn(user, (loginErr) => {
+        if (loginErr) {
+          console.error('Session login error:', loginErr);
+          return res.redirect('/login?error=session_error');
+        }
+        
+        (req.session as any).userId = user.id;
+        (req.session as any).userRole = user.role;
+        
+        console.log('Facebook login successful for user:', user.id);
+        
+        if (user.role === 'admin') {
+          res.redirect('/admin');
+        } else {
+          res.redirect('/dashboard');
+        }
+      });
+    })(req, res, next);
   }
 );
 
