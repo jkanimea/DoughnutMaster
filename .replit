@@ -49,4 +49,9 @@ integrations = ["javascript_database:1.0.0"]
 [userenv]
 
 [userenv.shared]
+
+[userenv.development]
 FACEBOOK_CALLBACK_URL = "https://2dee7c9b-69f2-4e47-9ee0-e0a59bf30964-00-3dx1vbbq5kufz.kirk.replit.dev/api/auth/facebook/callback"
+
+[userenv.production]
+FACEBOOK_CALLBACK_URL = "https://donut-master-pro.replit.app/api/auth/facebook/callback"
