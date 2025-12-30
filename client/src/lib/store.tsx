@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, type ReactNode } from 'react';
 import { Product, MOCK_USER } from './mock-data';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
