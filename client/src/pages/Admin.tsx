@@ -11,6 +11,7 @@ import { useStore } from "@/lib/store";
 import { format } from "date-fns";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 const salesData = [
   { name: "Mon", total: 1200 },
@@ -23,8 +24,23 @@ const salesData = [
 ];
 
 export default function Admin() {
-  const { availability, updateAvailability } = useStore();
+  const { user, availability, updateAvailability, login } = useStore();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  
+  if (!user || user.role !== 'admin') {
+     return (
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center space-y-4">
+           <Navbar />
+           <div className="flex-1 flex flex-col items-center justify-center">
+             <h1 className="text-2xl font-bold text-destructive">Access Denied</h1>
+             <p className="text-muted-foreground">You must be an administrator to view this page.</p>
+             <div className="mt-4 flex gap-4">
+                <Button onClick={() => login(true)}>Login as Admin</Button>
+             </div>
+           </div>
+        </div>
+     );
+  }
 
   const categories = ['donuts', 'buns', 'pastries'];
 

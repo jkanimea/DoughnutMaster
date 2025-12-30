@@ -43,6 +43,15 @@ export const PRODUCTS: Product[] = [
   }
 ];
 
+export const MOCK_ADMIN_USER = {
+  id: 'a1',
+  name: 'Admin User',
+  email: 'admin@donutmaster.com',
+  role: 'admin',
+  savedCards: [],
+  orders: []
+};
+
 export const MOCK_USER = {
   id: 'u1',
   name: 'Sarah Jenkins',

@@ -31,9 +31,9 @@ export function Navbar() {
               Dashboard
             </Link>
           )}
-          {user?.role === 'customer' && ( // In real app, check role properly
+          {user?.role === 'admin' && (
              <Link href="/admin" className={`text-sm font-medium transition-colors hover:text-primary ${location === '/admin' ? 'text-primary' : 'text-muted-foreground'}`}>
-               Admin Demo
+               Admin Dashboard
              </Link>
           )}
         </div>
@@ -45,9 +45,14 @@ export function Navbar() {
                <Button variant="ghost" size="sm" onClick={logout}>Logout</Button>
             </div>
           ) : (
-            <Button variant="ghost" size="sm" onClick={login} className="hidden md:flex gap-2">
-              <LogIn className="h-4 w-4" /> Login
-            </Button>
+            <div className="hidden md:flex gap-2">
+               <Button variant="ghost" size="sm" onClick={() => login(false)}>
+                 <LogIn className="h-4 w-4 mr-2" /> Login
+               </Button>
+               <Button variant="outline" size="sm" onClick={() => login(true)}>
+                 Admin Login
+               </Button>
+            </div>
           )}
 
           <Button 
@@ -75,12 +80,15 @@ export function Navbar() {
             <SheetContent side="left">
               <div className="flex flex-col gap-4 py-4">
                 <Link href="/" className="text-lg font-medium">Store</Link>
-                <Link href="/dashboard" className="text-lg font-medium">Dashboard</Link>
-                <Link href="/admin" className="text-lg font-medium">Admin</Link>
+                {user?.role === 'customer' && <Link href="/dashboard" className="text-lg font-medium">Dashboard</Link>}
+                {user?.role === 'admin' && <Link href="/admin" className="text-lg font-medium">Admin Dashboard</Link>}
                 {user ? (
                    <Button onClick={logout} variant="secondary">Logout</Button>
                 ) : (
-                   <Button onClick={login}>Login</Button>
+                   <div className="flex flex-col gap-2">
+                      <Button onClick={() => login(false)}>Login as Customer</Button>
+                      <Button variant="outline" onClick={() => login(true)}>Login as Admin</Button>
+                   </div>
                 )}
               </div>
             </SheetContent>

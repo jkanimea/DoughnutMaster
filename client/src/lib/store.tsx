@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import { Product, MOCK_USER } from './mock-data';
+import { Product, MOCK_USER, MOCK_ADMIN_USER } from './mock-data';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 
@@ -11,8 +11,8 @@ type StoreContextType = {
   removeFromCart: (productId: string) => void;
   clearCart: () => void;
   cartTotal: number;
-  user: typeof MOCK_USER | null;
-  login: () => void;
+  user: typeof MOCK_USER | typeof MOCK_ADMIN_USER | null;
+  login: (asAdmin?: boolean) => void;
   logout: () => void;
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
@@ -28,7 +28,7 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [user, setUser] = useState<typeof MOCK_USER | null>(null);
+  const [user, setUser] = useState<typeof MOCK_USER | typeof MOCK_ADMIN_USER | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   
   // New State for Availability
@@ -70,9 +70,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  const login = () => {
-    setUser(MOCK_USER);
-    toast({ title: "Welcome back!", description: `Logged in as ${MOCK_USER.name}` });
+  const login = (asAdmin = false) => {
+    const newUser = asAdmin ? MOCK_ADMIN_USER : MOCK_USER;
+    setUser(newUser);
+    toast({ title: "Welcome back!", description: `Logged in as ${newUser.name} (${newUser.role})` });
   };
 
   const logout = () => {
