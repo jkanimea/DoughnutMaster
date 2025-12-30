@@ -9,11 +9,15 @@ import Home from "@/pages/Home";
 import Checkout from "@/pages/Checkout";
 import Dashboard from "@/pages/Dashboard";
 import Admin from "@/pages/Admin";
+import Register from "@/pages/Register";
+import Login from "@/pages/Login";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/register" component={Register} />
+      <Route path="/login" component={Login} />
       <Route path="/checkout" component={Checkout} />
       <Route path="/dashboard" component={Dashboard} />
       <Route path="/admin" component={Admin} />

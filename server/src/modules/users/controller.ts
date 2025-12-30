@@ -4,6 +4,8 @@ import { BaseController } from '../../core/base/BaseController';
 import { UserService, type User, userService } from './service';
 import { createUserSchema, updateUserSchema, loginSchema, type CreateUserDto, type UpdateUserDto } from './dto';
 
+type SafeUser = Omit<User, 'password'>;
+
 export class UserController extends BaseController<User, CreateUserDto, UpdateUserDto> {
   protected get createSchema() {
     return createUserSchema;
@@ -17,7 +19,7 @@ export class UserController extends BaseController<User, CreateUserDto, UpdateUs
     super(userSvc);
   }
 
-  protected formatResponse(user: User): Omit<User, 'password'> {
+  protected formatResponse(user: User): SafeUser {
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }
