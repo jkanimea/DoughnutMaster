@@ -1,39 +1,30 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { DatabaseStorage } from '../storage';
-import { db } from '../db';
-import { users, products, orders, productAvailability, paymentMethods } from '@shared/schema';
-import { sql } from 'drizzle-orm';
+import prisma from '../src/database/prisma';
+import { userRepository, productRepository, orderRepository, availabilityRepository, paymentMethodRepository } from '../src/repositories';
 import bcrypt from 'bcryptjs';
 
-describe('DatabaseStorage', () => {
-  let storage: DatabaseStorage;
-
-  beforeAll(() => {
-    storage = new DatabaseStorage();
-  });
-
+describe('Repository Layer', () => {
   beforeEach(async () => {
-    // Clean up test data before each test
-    await db.delete(orders);
-    await db.delete(paymentMethods);
-    await db.delete(productAvailability);
-    await db.delete(products);
-    await db.delete(users);
+    await prisma.order.deleteMany();
+    await prisma.paymentMethod.deleteMany();
+    await prisma.productAvailability.deleteMany();
+    await prisma.product.deleteMany();
+    await prisma.user.deleteMany();
   });
 
   afterAll(async () => {
-    // Final cleanup
-    await db.delete(orders);
-    await db.delete(paymentMethods);
-    await db.delete(productAvailability);
-    await db.delete(products);
-    await db.delete(users);
+    await prisma.order.deleteMany();
+    await prisma.paymentMethod.deleteMany();
+    await prisma.productAvailability.deleteMany();
+    await prisma.product.deleteMany();
+    await prisma.user.deleteMany();
+    await prisma.$disconnect();
   });
 
-  describe('User operations', () => {
+  describe('UserRepository', () => {
     it('should create a new user', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
-      const user = await storage.createUser({
+      const user = await userRepository.create({
         email: 'test@example.com',
         password: hashedPassword,
         name: 'Test User',
@@ -47,43 +38,43 @@ describe('DatabaseStorage', () => {
       expect(user.role).toBe('customer');
     });
 
-    it('should get user by id', async () => {
+    it('should find user by id', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
-      const created = await storage.createUser({
+      const created = await userRepository.create({
         email: 'test2@example.com',
         password: hashedPassword,
         name: 'Test User 2',
         role: 'customer'
       });
 
-      const found = await storage.getUser(created.id);
+      const found = await userRepository.findById(created.id);
       expect(found).toBeDefined();
       expect(found?.email).toBe('test2@example.com');
     });
 
-    it('should get user by email', async () => {
+    it('should find user by email', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
-      await storage.createUser({
+      await userRepository.create({
         email: 'test3@example.com',
         password: hashedPassword,
         name: 'Test User 3',
         role: 'customer'
       });
 
-      const found = await storage.getUserByEmail('test3@example.com');
+      const found = await userRepository.findByEmail('test3@example.com');
       expect(found).toBeDefined();
       expect(found?.name).toBe('Test User 3');
     });
 
-    it('should return undefined for non-existent user', async () => {
-      const found = await storage.getUser('00000000-0000-0000-0000-000000000000');
-      expect(found).toBeUndefined();
+    it('should return null for non-existent user', async () => {
+      const found = await userRepository.findById('00000000-0000-0000-0000-000000000000');
+      expect(found).toBeNull();
     });
   });
 
-  describe('Product operations', () => {
+  describe('ProductRepository', () => {
     it('should create a product', async () => {
-      const product = await storage.createProduct({
+      const product = await productRepository.create({
         name: 'Test Donut',
         description: 'A delicious test donut',
         price: 350,
@@ -101,7 +92,7 @@ describe('DatabaseStorage', () => {
     });
 
     it('should get all active products', async () => {
-      await storage.createProduct({
+      await productRepository.create({
         name: 'Product 1',
         description: 'Desc 1',
         price: 300,
@@ -111,7 +102,7 @@ describe('DatabaseStorage', () => {
         isActive: true
       });
 
-      await storage.createProduct({
+      await productRepository.create({
         name: 'Product 2',
         description: 'Desc 2',
         price: 400,
@@ -121,12 +112,12 @@ describe('DatabaseStorage', () => {
         isActive: true
       });
 
-      const allProducts = await storage.getAllProducts();
+      const allProducts = await productRepository.findAll();
       expect(allProducts.length).toBeGreaterThanOrEqual(2);
     });
 
-    it('should get product by id', async () => {
-      const created = await storage.createProduct({
+    it('should find product by id', async () => {
+      const created = await productRepository.create({
         name: 'Find Me',
         description: 'Test product',
         price: 500,
@@ -136,37 +127,27 @@ describe('DatabaseStorage', () => {
         isActive: true
       });
 
-      const found = await storage.getProduct(created.id);
+      const found = await productRepository.findById(created.id);
       expect(found).toBeDefined();
       expect(found?.name).toBe('Find Me');
     });
   });
 
-  describe('Order operations', () => {
+  describe('OrderRepository', () => {
     it('should create an order', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
-      const user = await storage.createUser({
+      const user = await userRepository.create({
         email: 'order@example.com',
         password: hashedPassword,
         name: 'Order User',
         role: 'customer'
       });
 
-      const product = await storage.createProduct({
-        name: 'Test Product',
-        description: 'For order',
-        price: 350,
-        image: 'https://example.com/product.jpg',
-        category: 'donuts',
-        unit: 'per donut',
-        isActive: true
-      });
-
-      const order = await storage.createOrder({
+      const order = await orderRepository.create({
         userId: user.id,
         items: [
           {
-            productId: product.id,
+            productId: '00000000-0000-0000-0000-000000000001',
             quantity: 2,
             price: 350,
             name: 'Test Product'
@@ -186,14 +167,14 @@ describe('DatabaseStorage', () => {
 
     it('should get orders by user', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
-      const user = await storage.createUser({
+      const user = await userRepository.create({
         email: 'orders@example.com',
         password: hashedPassword,
         name: 'Orders User',
         role: 'customer'
       });
 
-      await storage.createOrder({
+      await orderRepository.create({
         userId: user.id,
         items: [{ productId: 'test', quantity: 1, price: 100, name: 'Test' }],
         total: 100,
@@ -202,20 +183,20 @@ describe('DatabaseStorage', () => {
         deliveryDate: '2025-01-15'
       });
 
-      const userOrders = await storage.getOrdersByUser(user.id);
+      const userOrders = await orderRepository.findByUserId(user.id);
       expect(userOrders.length).toBeGreaterThanOrEqual(1);
     });
 
     it('should update order status', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
-      const user = await storage.createUser({
+      const user = await userRepository.create({
         email: 'status@example.com',
         password: hashedPassword,
         name: 'Status User',
         role: 'customer'
       });
 
-      const order = await storage.createOrder({
+      const order = await orderRepository.create({
         userId: user.id,
         items: [{ productId: 'test', quantity: 1, price: 100, name: 'Test' }],
         total: 100,
@@ -224,15 +205,15 @@ describe('DatabaseStorage', () => {
         deliveryDate: '2025-01-15'
       });
 
-      const updated = await storage.updateOrderStatus(order.id, 'processing');
+      const updated = await orderRepository.updateStatus(order.id, 'processing');
       expect(updated).toBeDefined();
       expect(updated?.status).toBe('processing');
     });
   });
 
-  describe('Product availability operations', () => {
+  describe('AvailabilityRepository', () => {
     it('should set availability for a category on a date', async () => {
-      const availability = await storage.setAvailability({
+      const availability = await availabilityRepository.upsert({
         date: '2025-01-15',
         category: 'donuts',
         isAvailable: false
@@ -245,13 +226,13 @@ describe('DatabaseStorage', () => {
     });
 
     it('should update existing availability', async () => {
-      await storage.setAvailability({
+      await availabilityRepository.upsert({
         date: '2025-01-16',
         category: 'pastries',
         isAvailable: false
       });
 
-      const updated = await storage.setAvailability({
+      const updated = await availabilityRepository.upsert({
         date: '2025-01-16',
         category: 'pastries',
         isAvailable: true
@@ -261,48 +242,48 @@ describe('DatabaseStorage', () => {
     });
 
     it('should get availability by date', async () => {
-      await storage.setAvailability({
+      await availabilityRepository.upsert({
         date: '2025-01-17',
         category: 'donuts',
         isAvailable: false
       });
 
-      await storage.setAvailability({
+      await availabilityRepository.upsert({
         date: '2025-01-17',
         category: 'buns',
         isAvailable: true
       });
 
-      const availabilities = await storage.getAvailabilityByDate('2025-01-17');
+      const availabilities = await availabilityRepository.findByDate('2025-01-17');
       expect(availabilities.length).toBeGreaterThanOrEqual(2);
     });
 
     it('should delete availability', async () => {
-      await storage.setAvailability({
+      await availabilityRepository.upsert({
         date: '2025-01-18',
         category: 'donuts',
         isAvailable: false
       });
 
-      await storage.deleteAvailability('2025-01-18', 'donuts');
+      await availabilityRepository.delete('2025-01-18', 'donuts');
       
-      const availabilities = await storage.getAvailabilityByDate('2025-01-18');
+      const availabilities = await availabilityRepository.findByDate('2025-01-18');
       const donutAvailability = availabilities.find(a => a.category === 'donuts');
       expect(donutAvailability).toBeUndefined();
     });
   });
 
-  describe('Payment method operations', () => {
+  describe('PaymentMethodRepository', () => {
     it('should create a payment method', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
-      const user = await storage.createUser({
+      const user = await userRepository.create({
         email: 'payment@example.com',
         password: hashedPassword,
         name: 'Payment User',
         role: 'customer'
       });
 
-      const method = await storage.createPaymentMethod({
+      const method = await paymentMethodRepository.create({
         userId: user.id,
         brand: 'visa',
         last4: '4242',
@@ -318,14 +299,14 @@ describe('DatabaseStorage', () => {
 
     it('should get payment methods by user', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
-      const user = await storage.createUser({
+      const user = await userRepository.create({
         email: 'methods@example.com',
         password: hashedPassword,
         name: 'Methods User',
         role: 'customer'
       });
 
-      await storage.createPaymentMethod({
+      await paymentMethodRepository.create({
         userId: user.id,
         brand: 'visa',
         last4: '1111',
@@ -334,20 +315,20 @@ describe('DatabaseStorage', () => {
         isDefault: false
       });
 
-      const methods = await storage.getPaymentMethodsByUser(user.id);
+      const methods = await paymentMethodRepository.findByUserId(user.id);
       expect(methods.length).toBeGreaterThanOrEqual(1);
     });
 
     it('should delete payment method', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
-      const user = await storage.createUser({
+      const user = await userRepository.create({
         email: 'delete@example.com',
         password: hashedPassword,
         name: 'Delete User',
         role: 'customer'
       });
 
-      const method = await storage.createPaymentMethod({
+      const method = await paymentMethodRepository.create({
         userId: user.id,
         brand: 'mastercard',
         last4: '5555',
@@ -356,9 +337,9 @@ describe('DatabaseStorage', () => {
         isDefault: false
       });
 
-      await storage.deletePaymentMethod(method.id);
+      await paymentMethodRepository.delete(method.id);
       
-      const methods = await storage.getPaymentMethodsByUser(user.id);
+      const methods = await paymentMethodRepository.findByUserId(user.id);
       const found = methods.find(m => m.id === method.id);
       expect(found).toBeUndefined();
     });

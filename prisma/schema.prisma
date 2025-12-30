@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  customer
+  admin
+}
+
+enum Category {
+  donuts
+  pastries
+  buns
+}
+
+enum OrderStatus {
+  pending
+  processing
+  delivered
+  cancelled
+}
+
+model User {
+  id             String          @id @default(uuid()) @db.Uuid
+  email          String          @unique
+  password       String
+  name           String
+  role           Role            @default(customer)
+  createdAt      DateTime        @default(now()) @map("created_at")
+  orders         Order[]
+  paymentMethods PaymentMethod[]
+
+  @@map("users")
+}
+
+model Product {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  description String
+  price       Int
+  image       String
+  category    Category
+  unit        String
+  isActive    Boolean  @default(true) @map("is_active")
+
+  @@map("products")
+}
+
+model Order {
+  id            String      @id @default(uuid()) @db.Uuid
+  userId        String      @map("user_id") @db.Uuid
+  items         Json
+  total         Int
+  status        OrderStatus @default(pending)
+  paymentMethod String      @map("payment_method")
+  deliveryDate  String      @map("delivery_date")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  user          User        @relation(fields: [userId], references: [id])
+
+  @@map("orders")
+}
+
+model ProductAvailability {
+  id          String   @id @default(uuid()) @db.Uuid
+  date        String
+  category    Category
+  isAvailable Boolean  @default(true) @map("is_available")
+
+  @@unique([date, category])
+  @@map("product_availability")
+}
+
+model PaymentMethod {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  brand     String
+  last4     String
+  expMonth  Int      @map("exp_month")
+  expYear   Int      @map("exp_year")
+  isDefault Boolean  @default(false) @map("is_default")
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@map("payment_methods")
+}

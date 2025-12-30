@@ -4,8 +4,7 @@ import express from 'express';
 import session from 'express-session';
 import { registerRoutes } from '../routes';
 import { createServer } from 'http';
-import { db } from '../db';
-import { users, products } from '@shared/schema';
+import prisma from '../src/database/prisma';
 import bcrypt from 'bcryptjs';
 
 describe('API Routes', () => {
@@ -31,13 +30,20 @@ describe('API Routes', () => {
   });
 
   beforeEach(async () => {
-    await db.delete(products);
-    await db.delete(users);
+    await prisma.order.deleteMany();
+    await prisma.paymentMethod.deleteMany();
+    await prisma.productAvailability.deleteMany();
+    await prisma.product.deleteMany();
+    await prisma.user.deleteMany();
   });
 
   afterAll(async () => {
-    await db.delete(products);
-    await db.delete(users);
+    await prisma.order.deleteMany();
+    await prisma.paymentMethod.deleteMany();
+    await prisma.productAvailability.deleteMany();
+    await prisma.product.deleteMany();
+    await prisma.user.deleteMany();
+    await prisma.$disconnect();
   });
 
   describe('Auth endpoints', () => {
@@ -58,11 +64,13 @@ describe('API Routes', () => {
 
     it('POST /api/auth/register should reject duplicate email', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
-      await db.insert(users).values({
-        email: 'duplicate@example.com',
-        password: hashedPassword,
-        name: 'Duplicate User',
-        role: 'customer'
+      await prisma.user.create({
+        data: {
+          email: 'duplicate@example.com',
+          password: hashedPassword,
+          name: 'Duplicate User',
+          role: 'customer'
+        }
       });
 
       const response = await request(app)
@@ -80,11 +88,13 @@ describe('API Routes', () => {
 
     it('POST /api/auth/login should authenticate valid credentials', async () => {
       const hashedPassword = await bcrypt.hash('password123', 10);
-      await db.insert(users).values({
-        email: 'login@example.com',
-        password: hashedPassword,
-        name: 'Login User',
-        role: 'customer'
+      await prisma.user.create({
+        data: {
+          email: 'login@example.com',
+          password: hashedPassword,
+          name: 'Login User',
+          role: 'customer'
+        }
       });
 
       const response = await request(app)
@@ -125,14 +135,16 @@ describe('API Routes', () => {
 
   describe('Product endpoints', () => {
     it('GET /api/products should return all active products', async () => {
-      await db.insert(products).values({
-        name: 'Test Product',
-        description: 'Test description',
-        price: 350,
-        image: 'https://example.com/test.jpg',
-        category: 'donuts',
-        unit: 'per donut',
-        isActive: true
+      await prisma.product.create({
+        data: {
+          name: 'Test Product',
+          description: 'Test description',
+          price: 350,
+          image: 'https://example.com/test.jpg',
+          category: 'donuts',
+          unit: 'per donut',
+          isActive: true
+        }
       });
 
       const response = await request(app).get('/api/products');
