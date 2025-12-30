@@ -30,7 +30,7 @@ export function ProductCard({ product }: { product: Product }) {
         {!isAvailable && (
           <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm">
             <span className="bg-destructive text-destructive-foreground px-3 py-1 rounded-full font-bold text-sm transform -rotate-12">
-              UNAVAILABLE
+              SOLD OUT
             </span>
           </div>
         )}
@@ -66,12 +66,9 @@ export function ProductCard({ product }: { product: Product }) {
             disabled={!isAvailable}
             data-testid={`add-to-cart-${product.id}`}
           >
-            {isAvailable ? 'Add to Cart' : 'Unavailable'}
+            {isAvailable ? 'Add to Cart' : 'Sold Out'}
           </Button>
         </div>
-        {!selectedOrderDate && isAvailable && (
-           <p className="text-xs text-muted-foreground mt-2 text-center italic">Select a date to check specific availability</p>
-        )}
       </div>
     </motion.div>
   );

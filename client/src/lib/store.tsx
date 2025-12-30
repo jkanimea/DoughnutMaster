@@ -32,7 +32,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [isCartOpen, setIsCartOpen] = useState(false);
   
   // New State for Availability
-  const [selectedOrderDate, setSelectedOrderDate] = useState<Date | undefined>(undefined);
+  const [selectedOrderDate, setSelectedOrderDate] = useState<Date | undefined>(new Date());
   const [availability, setAvailability] = useState<Record<string, string[]>>({}); // Stores UNAVAILABLE categories per date
   
   const { toast } = useToast();
