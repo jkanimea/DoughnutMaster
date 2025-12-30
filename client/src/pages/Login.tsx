@@ -37,7 +37,7 @@ export default function Login() {
       if (user.role === "admin") {
         setLocation("/admin");
       } else {
-        setLocation("/");
+        setLocation("/dashboard");
       }
     },
     onError: (error: Error) => {
@@ -113,7 +113,16 @@ export default function Login() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
+                <a 
+                  href="/forgot-password" 
+                  className="text-sm text-amber-600 hover:underline"
+                  data-testid="link-forgot-password"
+                >
+                  Forgot password?
+                </a>
+              </div>
               <Input
                 id="password"
                 type="password"
@@ -137,7 +146,7 @@ export default function Login() {
         <CardFooter className="justify-center">
           <p className="text-sm text-muted-foreground">
             Don't have an account?{" "}
-            <a href="/register" className="text-amber-600 hover:underline" data-testid="link-register">
+            <a href="/dashboard" className="text-amber-600 hover:underline" data-testid="link-register">
               Create one
             </a>
           </p>

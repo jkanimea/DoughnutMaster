@@ -5,6 +5,7 @@ import { productController } from './src/modules/products';
 import { orderController } from './src/modules/orders';
 import { availabilityController } from './src/modules/availability';
 import { paymentMethodController } from './src/modules/payment-methods';
+import { passwordResetController } from './src/modules/password-reset';
 
 export async function registerRoutes(
   httpServer: Server,
@@ -15,6 +16,11 @@ export async function registerRoutes(
   app.post('/api/auth/login', (req, res) => userController.login(req, res));
   app.post('/api/auth/logout', (req, res) => userController.logout(req, res));
   app.get('/api/auth/me', (req, res) => userController.me(req, res));
+
+  // Password reset routes
+  app.post('/api/auth/forgot-password', (req, res) => passwordResetController.forgotPassword(req, res));
+  app.get('/api/auth/reset-password/:token', (req, res) => passwordResetController.validateToken(req, res));
+  app.post('/api/auth/reset-password', (req, res) => passwordResetController.resetPassword(req, res));
 
   // User CRUD routes (admin only would typically have these)
   app.get('/api/users', (req, res) => userController.findAll(req, res));
