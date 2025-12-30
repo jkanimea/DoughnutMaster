@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useStore } from "@/lib/store";
 import { Button } from "@/components/ui/button";
-import { ShoppingBag, User, Menu, LogIn } from "lucide-react";
+import { ShoppingBag, User, Menu, LogIn, UserPlus } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { useState } from "react";
@@ -46,12 +46,16 @@ export function Navbar() {
             </div>
           ) : (
             <div className="hidden md:flex gap-2">
-               <Button variant="ghost" size="sm" onClick={() => login(false)}>
-                 <LogIn className="h-4 w-4 mr-2" /> Login
-               </Button>
-               <Button variant="outline" size="sm" onClick={() => login(true)}>
-                 Admin Login
-               </Button>
+               <Link href="/login">
+                 <Button variant="ghost" size="sm" data-testid="nav-login">
+                   <LogIn className="h-4 w-4 mr-2" /> Login
+                 </Button>
+               </Link>
+               <Link href="/dashboard">
+                 <Button variant="outline" size="sm" data-testid="nav-register">
+                   <UserPlus className="h-4 w-4 mr-2" /> Register
+                 </Button>
+               </Link>
             </div>
           )}
 
@@ -86,8 +90,12 @@ export function Navbar() {
                    <Button onClick={logout} variant="secondary">Logout</Button>
                 ) : (
                    <div className="flex flex-col gap-2">
-                      <Button onClick={() => login(false)}>Login as Customer</Button>
-                      <Button variant="outline" onClick={() => login(true)}>Login as Admin</Button>
+                      <Link href="/login">
+                        <Button className="w-full">Login</Button>
+                      </Link>
+                      <Link href="/dashboard">
+                        <Button variant="outline" className="w-full">Register</Button>
+                      </Link>
                    </div>
                 )}
               </div>
