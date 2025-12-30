@@ -47,6 +47,7 @@ Each entity has its own module folder with:
 - `orders/`: Order creation, status management
 - `availability/`: Date-based product availability
 - `payment-methods/`: Saved payment methods
+- `password-reset/`: Token-based password reset with SHA-256 hashing
 
 #### Benefits of This Pattern
 - 90% less boilerplate code for new entities
@@ -59,7 +60,7 @@ Each entity has its own module folder with:
 - **Database**: PostgreSQL (required via `DATABASE_URL` environment variable)
 - **ORM**: Prisma 7 with PostgreSQL adapter pattern
 - **Schema Location**: `prisma/schema.prisma` contains all model definitions
-- **Tables**: User, Product, Order, ProductAvailability, PaymentMethod
+- **Tables**: User, Product, Order, ProductAvailability, PaymentMethod, PasswordResetToken
 
 ### Key Data Models
 - **Users**: Email/password auth with optional phone, social login support (Google/Facebook via provider/providerId fields), customer and admin roles
@@ -72,8 +73,12 @@ Each entity has its own module folder with:
 - Role-based access control (customer vs admin) - new users default to customer role
 - Social login support with provider/providerId fields (Google, Facebook ready)
 - Default admin account: admin@donutmaster.co.nz / admin123 (created via seed script)
-- Registration page at `/register` with name, email, phone, and social login buttons
+- Registration integrated into Dashboard page (shows registration form for unauthenticated users)
 - Login page at `/login` with email/password and social login buttons
+- Password reset flow via `/forgot-password` and `/reset-password` pages
+- Reset tokens use SHA-256 hashing with 1-hour expiry and automatic token rotation
+- Development mode shows reset token in UI for testing (must be disabled in production)
+- Social login users cannot use password reset (they don't have passwords)
 - Database-backed auth with Prisma
 
 ### Testing Infrastructure
@@ -85,14 +90,15 @@ Each entity has its own module folder with:
   - `server/__tests__/storage.test.ts`: 17 repository layer tests
   - `server/__tests__/routes.test.ts`: 15 API integration tests
   - `server/__tests__/registration.test.ts`: 14 registration and social login tests
+  - `server/__tests__/password-reset.test.ts`: 14 password reset tests
   - `client/src/__tests__/components/ProductCard.test.tsx`: 4 component tests
-  - `e2e/donutmaster.spec.ts`: 17 end-to-end test scenarios (including registration/login flows)
+  - `e2e/donutmaster.spec.ts`: 22 end-to-end test scenarios (dashboard registration, login, password reset flows)
 - **Test Commands**:
   - `npx vitest run`: Run all unit/integration tests
   - `npx vitest run --coverage`: Run with coverage report
   - `npx playwright test`: Run E2E tests
   - `npx tsx prisma/seed.ts`: Seed admin user
-- **Current Status**: 46 passing unit/integration tests, E2E framework configured
+- **Current Status**: 60 passing unit/integration tests, 22 E2E tests configured
 
 ## Adding New Entities (6-Step Workflow)
 
