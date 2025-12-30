@@ -1,0 +1,417 @@
+Replit Prompt Enhancement: Layered Architecture Specification
+ARCHITECTURAL PATTERN: Generic Base Services & Controllers
+REQUIRED PATTERN: Inheritance-Based Layering
+Goal: Minimize boilerplate code when adding new entities
+Pattern: Base Classes → Entity-Specific Classes → Only Add Unique Methods
+
+ARCHITECTURE LAYERS:
+LAYER 1: DATA ACCESS LAYER (Repository/DAO)
+Purpose: Abstract database operations from business logic
+Structure:
+
+Base Repository Interface: Defines CRUD contract (create, findById, findAll, update, delete, count)
+
+Generic Repository Implementation: Works with Prisma models
+
+Entity-Specific Repositories: Extend base, add custom queries (findByEmail, findByStatus, etc.)
+
+Key Point: All database logic isolated here
+
+LAYER 2: BUSINESS LOGIC LAYER (Services)
+Purpose: Business rules, validation, data transformation
+Structure:
+
+A. Base Service Interface:
+
+Defines generic CRUD method signatures
+
+Types: T (entity), CreateDto (creation data), UpdateDto (update data)
+
+Methods: create, findById, findAll, update, delete, count
+
+B. Abstract Base Service Class:
+
+Implements ALL CRUD methods from interface
+
+Contains common validation logic
+
+Handles standard error patterns
+
+Receives repository instance via constructor
+
+Result: Complete CRUD functionality in base class
+
+C. Entity-Specific Service Classes:
+
+Extends BaseService (inherits all CRUD)
+
+Only adds unique business methods
+
+Example UserService Methods:
+
+findByEmail(email) - Unique user lookup
+
+updatePassword(userId, newPassword) - Password-specific logic
+
+getDashboardStats(userId) - Custom reporting
+
+requestCredit(userId, terms) - Payment-specific
+
+No CRUD duplication - all from parent
+
+LAYER 3: API/HTTP LAYER (Controllers)
+Purpose: Handle HTTP requests, routing, response formatting
+Structure:
+
+A. Base Controller Interface:
+
+Defines HTTP endpoint method signatures
+
+Types match Service layer (T, CreateDto, UpdateDto)
+
+Methods: create, findById, findAll, update, delete (all return Response)
+
+B. Abstract Base Controller Class:
+
+Implements ALL CRUD endpoints from interface
+
+Contains common HTTP handling:
+
+Request validation
+
+Response formatting
+
+Error response standardization
+
+Status code consistency
+
+Receives Service instance via constructor
+
+Result: Complete REST API endpoints in base class
+
+C. Entity-Specific Controller Classes:
+
+Extends BaseController (inherits all endpoints)
+
+Only adds unique endpoints
+
+Example UserController Endpoints:
+
+POST /api/users/login - Custom authentication
+
+GET /api/users/:id/dashboard - Custom dashboard data
+
+POST /api/users/:id/credit-request - Credit-specific
+
+PUT /api/users/:id/payment-methods - Payment management
+
+No route duplication - CRUD routes from parent
+
+LAYER 4: ROUTING LAYER
+Purpose: Map controllers to Next.js API routes
+Structure:
+
+Generic Route Factory: Creates standard CRUD routes from BaseController
+
+Custom Route Registration: Adds entity-specific endpoints
+
+Middleware Application: Authentication, validation per route
+
+IMPLEMENTATION REQUIREMENTS:
+1. INTERFACE DEFINITIONS (MUST CREATE):
+IBaseRepository<T> - Data layer contract
+
+IBaseService<T, CreateDto, UpdateDto> - Business layer contract
+
+IBaseController<T, CreateDto, UpdateDto> - API layer contract
+
+2. BASE CLASS IMPLEMENTATIONS (MUST CREATE):
+BaseRepository - Generic Prisma operations
+
+BaseService - Complete CRUD business logic
+
+BaseController - Complete REST API endpoints
+
+3. ENTITY-SPECIFIC IMPLEMENTATION PATTERN:
+For each new entity (User, Product, Order, Payment, etc.):
+
+Step 1: Create Repository
+
+typescript
+class UserRepository extends BaseRepository<User> {
+  // Only add custom queries
+  findByEmail(email) { ... }
+  findActiveUsers() { ... }
+}
+Step 2: Create Service
+
+typescript
+class UserService extends BaseService<User, CreateUserDto, UpdateUserDto> {
+  // Only add unique business logic
+  async login(credentials) { ... }
+  async updatePassword(userId, newPassword) { ... }
+  async getDashboardStats(userId) { ... }
+}
+Step 3: Create Controller
+
+typescript
+class UserController extends BaseController<User, CreateUserDto, UpdateUserDto> {
+  // Only add unique endpoints
+  async login(req, res) { ... }
+  async getDashboard(req, res) { ... }
+  async updatePaymentMethods(req, res) { ... }
+}
+Step 4: Create Routes
+
+typescript
+// Standard CRUD routes auto-registered via BaseController
+// Only manually add custom routes
+router.post('/login', userController.login);
+router.get('/:id/dashboard', userController.getDashboard);
+4. BENEFITS OF THIS PATTERN:
+90% Less Code: New entities only need unique methods
+
+Consistency: All entities behave the same for CRUD
+
+Maintainability: Fix base class, fixes all entities
+
+Testability: Base classes tested once, inherited everywhere
+
+Scalability: Add new entities in minutes, not hours
+
+FOLDER STRUCTURE REFINEMENT:
+text
+src/
+├── core/                          # Base architecture
+│   ├── interfaces/                # IBaseRepository, IBaseService, IBaseController
+│   ├── base/                      # BaseRepository, BaseService, BaseController
+│   └── exceptions/                # Base exceptions, error handlers
+├── modules/                       # Each business domain
+│   ├── users/
+│   │   ├── repository/            # UserRepository (extends BaseRepository)
+│   │   ├── service/               # UserService (extends BaseService)
+│   │   ├── controller/            # UserController (extends BaseController)
+│   │   ├── dto/                   # CreateUserDto, UpdateUserDto
+│   │   └── routes.ts              # Custom routes only
+│   ├── products/                  # Same pattern for Products
+│   ├── orders/                    # Same pattern for Orders
+│   └── payments/                  # Same pattern for Payments
+├── shared/                        # Utilities, middleware
+└── app/                           # Next.js app router
+IMPLEMENTATION ORDER:
+Phase 1: Core Foundation
+Create all interfaces (IBaseRepository, IBaseService, IBaseController)
+
+Implement BaseRepository with Prisma integration
+
+Implement BaseService with business logic patterns
+
+Implement BaseController with HTTP handling
+
+Create generic error handling middleware
+
+Phase 2: First Entity (User Module)
+UserRepository extending BaseRepository (add findByEmail)
+
+UserService extending BaseService (add login, updatePassword)
+
+UserController extending BaseController (add login endpoint)
+
+User DTOs for creation/update
+
+Routes: Auto-CRUD + custom login route
+
+Phase 3: Subsequent Entities
+Product Module (same pattern)
+
+Order Module (same pattern)
+
+Payment Module (same pattern)
+
+Inventory Module (same pattern)
+
+Report Module (same pattern)
+
+Time Savings: Each new module takes ~30 minutes instead of 3-4 hours
+
+TESTING STRATEGY FOR LAYERED ARCHITECTURE:
+1. Base Class Tests (Write Once):
+Test BaseRepository CRUD operations
+
+Test BaseService business logic
+
+Test BaseController HTTP handling
+
+Benefit: All inherited classes automatically tested
+
+2. Entity-Specific Tests (Minimal):
+Only test unique methods added in child classes
+
+Example: Test UserService.login(), but not UserService.create()
+
+Benefit: Drastically reduced test code
+
+3. Integration Tests:
+Test full flow through layers
+
+Verify inheritance works correctly
+
+Ensure base error handling propagates
+
+ADDING NEW ENTITY WORKFLOW:
+Step 1: Define Entity
+typescript
+// prisma/schema.prisma
+model NewEntity {
+  id        String   @id @default(cuid())
+  name      String
+  // ... fields
+}
+Step 2: Create DTOs
+typescript
+// modules/new-entity/dto/
+interface CreateNewEntityDto { ... }
+interface UpdateNewEntityDto { ... }
+Step 3: Create Repository (5 lines)
+typescript
+class NewEntityRepository extends BaseRepository<NewEntity> {
+  // Add 1-2 custom queries if needed
+  findByCustomField(field) { ... }
+}
+Step 4: Create Service (10 lines)
+typescript
+class NewEntityService extends BaseService<
+  NewEntity, 
+  CreateNewEntityDto, 
+  UpdateNewEntityDto
+> {
+  // Add 1-3 unique business methods
+  customBusinessMethod(data) { ... }
+}
+Step 5: Create Controller (10 lines)
+typescript
+class NewEntityController extends BaseController<
+  NewEntity,
+  CreateNewEntityDto,
+  UpdateNewEntityDto
+> {
+  // Add 1-3 unique endpoints
+  async customEndpoint(req, res) { ... }
+}
+Step 6: Create Routes (5 lines)
+typescript
+// Auto-register: GET/POST/PUT/DELETE /api/new-entities
+// Manually add: POST /api/new-entities/custom-action
+Total Time: ~30 minutes per new entity
+Lines of Code: ~30 lines (vs 300+ without pattern)
+
+SPECIFIC ENTITY EXAMPLES FOR DONUT APP:
+Payment Module Structure:
+PaymentRepository: Extends BaseRepository (add findByUserId, findByStatus)
+
+PaymentService: Extends BaseService (add processStripe, verifyBankTransfer, refund)
+
+PaymentController: Extends BaseController (add /webhook, /verify-bank-transfer)
+
+Routes: CRUD auto + custom payment endpoints
+
+Order Module Structure:
+OrderRepository: Extends BaseRepository (add findByUser, findByDateRange)
+
+OrderService: Extends BaseService (add calculateTotal, validateDeliveryDate, applyCredit)
+
+OrderController: Extends BaseController (add /schedule, /request-credit)
+
+Routes: CRUD auto + custom order endpoints
+
+Inventory Module Structure:
+InventoryRepository: Extends BaseRepository (add findLowStock, findByIngredient)
+
+InventoryService: Extends BaseService (add calculateRequirements, checkStock, reorder)
+
+InventoryController: Extends BaseController (add /requirements, /reorder)
+
+Routes: CRUD auto + custom inventory endpoints
+
+MANDATORY REQUIREMENTS FOR REPLIT IMPLEMENTATION:
+Must implement ALL three base interfaces
+
+Must implement ALL three base classes
+
+Must use inheritance for ALL entities
+
+CRUD methods must NOT be duplicated in child classes
+
+Child classes must ONLY contain unique methods
+
+Error handling must be centralized in base classes
+
+Type safety must be maintained through generics
+
+Testing must verify inheritance works correctly
+
+New entity addition must follow the 6-step workflow
+
+Folder structure must match layered architecture
+
+ACCEPTANCE CRITERIA FOR ARCHITECTURE:
+Technical Validation:
+✅ New entity can be added in under 30 minutes
+
+✅ No CRUD code duplicated across modules
+
+✅ Base class changes affect all entities
+
+✅ TypeScript generics work correctly
+
+✅ All inherited methods are accessible
+
+✅ Error handling consistent across all endpoints
+
+✅ Testing coverage high with minimal test code
+
+Business Validation:
+✅ All existing features still work
+
+✅ Payment processing uses layered architecture
+
+✅ Inventory management uses layered architecture
+
+✅ Order processing uses layered architecture
+
+✅ Financial reporting uses layered architecture
+
+✅ Performance not impacted by abstraction
+
+✅ Code is more maintainable than before
+
+Developer Experience:
+✅ Clear pattern for adding new features
+
+✅ Easy to find where business logic lives
+
+✅ Simple to debug through layers
+
+✅ Consistent API patterns across all endpoints
+
+✅ Minimal learning curve for new developers
+
+FINAL INSTRUCTION FOR REPLIT:
+Implement this layered architecture FIRST before any business features.
+The foundation must be solid before building the donut application.
+
+Success is defined as:
+
+Base interfaces and classes implemented
+
+At least 3 entities (User, Product, Order) using the pattern
+
+All CRUD operations work via inheritance
+
+Unique methods can be added to child classes
+
+Full test suite passes with inheritance testing
+
+New entity can be added following the 6-step workflow
+
+This architectural pattern is non-negotiable - it will save hundreds of hours of development time as the application grows. The initial investment in setting up the base layers will pay off exponentially with each new feature added.
